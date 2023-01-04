@@ -7,6 +7,9 @@ public class Moverment : MonoBehaviour
     [SerializeField] float mainThrust = 1000;
     [SerializeField] float rotateThrust = 1000f;
     [SerializeField] AudioClip mainEngine;
+    [SerializeField] ParticleSystem mainEngineParticle;
+    [SerializeField] ParticleSystem leftEngineParticle;
+    [SerializeField] ParticleSystem rightEngineParticle;
 
     Rigidbody rb;
     AudioSource audioSource;
@@ -28,30 +31,67 @@ public class Moverment : MonoBehaviour
     void ProcessThrust()
     {
         if(Input.GetKey(KeyCode.Space)){
-            rb.AddRelativeForce(Vector3.up * mainThrust * Time.deltaTime);
-            if(!audioSource.isPlaying) {
-                audioSource.PlayOneShot(mainEngine);
-            }
+           _StartThrust();
         }
         else {
-            audioSource.Stop();
+           _StopThrust();
         }
     }
 
-
+    
     void ProcessRotation()
     {    
         if(Input.GetKey(KeyCode.A)) {
-            ApplyRotation(rotateThrust);
+           _Rotation(rotateThrust, rightEngineParticle);
         }
+        else {
+            _StopRotation(rightEngineParticle);
+        }
+
         if(Input.GetKey(KeyCode.D)){
-            ApplyRotation(-rotateThrust);
+            _Rotation(-rotateThrust, leftEngineParticle);
+        }
+        else {
+            _StopRotation(leftEngineParticle);
         }
     }
 
-    void ApplyRotation(float rotateThrust){ 
+    // xu ly xoay trai xoay phai
+    private void _Rotation(float rotateThrust, ParticleSystem engineParticle)
+    {
+         _ApplyRotation(rotateThrust);
+        if(!engineParticle.isPlaying) {
+            engineParticle.Play();
+        }
+    }
+
+    // xu ly ngung xoay trai xoay phai
+    private void _StopRotation(ParticleSystem engineParticle)
+    {
+        engineParticle.Stop();
+    }
+
+    // xu ly xoay them toc do xoay theo frame rate cua tung PC
+    private void _ApplyRotation(float rotateThrust)
+    { 
         rb.freezeRotation = true;
         transform.Rotate(Vector3.forward * rotateThrust * Time.deltaTime);
         rb.freezeRotation = false;
+    }
+
+    private void _StartThrust()
+    {
+        rb.AddRelativeForce(Vector3.up * mainThrust * Time.deltaTime);
+        if(!audioSource.isPlaying) {
+            audioSource.PlayOneShot(mainEngine);
+        }
+        if(!mainEngineParticle.isPlaying) {
+            mainEngineParticle.Play();
+        }
+    }
+
+    private void _StopThrust(){
+        mainEngineParticle.Stop();
+        audioSource.Stop();
     }
 }
